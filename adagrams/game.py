@@ -27,7 +27,29 @@ def draw_letters():
     return hand
 
 def uses_available_letters(word, letter_bank):
-    pass
+    word = word.upper()
+    
+    for char in word:
+        count_word = 0
+        count_bank = 0
+
+    
+        i = 0
+        while i < len(word):
+            if word[i] == char:
+                count_word += 1
+            i += 1
+
+        j = 0
+        while j < len(letter_bank):
+            if letter_bank[j] == char:
+                count_bank += 1
+            j += 1
+        
+        if count_word > count_bank:
+            return False
+
+    return True
 
 def score_word(word):
     pass
