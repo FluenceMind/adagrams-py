@@ -9,7 +9,8 @@ LETTER_POOL = {
 }
 
 SCORE_CHART = {
-    "A": 1, "E": 1, "I": 1, "O": 1, "U": 1, "L": 1, "N": 1, "R": 1, "S": 1, "T": 1,
+    "A": 1, "E": 1, "I": 1, "O": 1, "U": 1,
+    "L": 1, "N": 1, "R": 1, "S": 1, "T": 1,
     "D": 2, "G": 2,
     "B": 3, "C": 3, "M": 3, "P": 3,
     "F": 4, "H": 4, "V": 4, "W": 4, "Y": 4,
@@ -22,80 +23,69 @@ def draw_letters():
     tiles = []
     for letter in LETTER_POOL:
         count = LETTER_POOL[letter]
-        i = 0
-        while i < count:
+        for _ in range(count):
             tiles.append(letter)
-            i += 1
 
     hand = []
-    picks = 0
-    while picks < 10:
+    for _ in range(10):
         idx = randint(0, len(tiles) - 1)
-        hand.append(tiles.pop(idx))
-        picks += 1
+        hand.append(tiles[idx])
+        tiles[idx] = tiles[-1]
+        tiles.pop()
 
     return hand
 
 def uses_available_letters(word, letter_bank):
-    word = word.upper()
-    
-    for char in word:
-        count_word = 0
-        count_bank = 0
+    bank_counts = {}
+    for letter in letter_bank:
+        upper_letter = letter.upper()
+        if upper_letter in bank_counts:
+            bank_counts[upper_letter] += 1
+        else:
+            bank_counts[upper_letter] = 1
 
-    
-        i = 0
-        while i < len(word):
-            if word[i] == char:
-                count_word += 1
-            i += 1
-
-        j = 0
-        while j < len(letter_bank):
-            if letter_bank[j] == char:
-                count_bank += 1
-            j += 1
-        
-        if count_word > count_bank:
+    for ch in word.upper():
+        if ch in bank_counts and bank_counts[ch] > 0:
+            bank_counts[ch] -= 1
+        else:
             return False
-
     return True
 
 def score_word(word):
-    word = word.upper()
-    score = 0
-
-    i = 0
-    while i < len(word):
-        ch = word[i]
+    total_score = 0
+    for ch in word.upper():
         if ch in SCORE_CHART:
-            score += SCORE_CHART[ch]
-        i += 1
+            total_score += SCORE_CHART[ch]
 
-    if 7 <= len(word) <= 10:
-        score += 8
+    word_len = len(word)
+    if 7 <= word_len <= 10:
+        total_score += 8
 
-    return score
+    return total_score
 
 def get_highest_word_score(word_list):
-    best_word = word_list[0]
-    best_score = score_word(best_word)
+    highest_score = 0
+    for word in word_list:
+        points = score_word(word)
+        if points > highest_score:
+            highest_score = points
 
-    i = 1
-    while i < len(word_list):
-        word = word_list[i]
-        score = score_word(word)
+    candidates = []
+    for word in word_list:
+        if score_word(word) == highest_score:
+            candidates.append(word)
 
-        if score > best_score:
-            best_word = word
-            best_score = score
-        elif score == best_score:
-            if len(word) == 10 and len(best_word) != 10:
-                best_word = word
-                best_score = score
-            elif len(word) < len(best_word) and len(best_word) != 10:
-                best_word = word
-                best_score = score
-        i += 1
+    for word in candidates:
+        if len(word) == 10:
+            return (word, highest_score)
 
-    return (best_word, best_score)
+    best_word = candidates[0]
+    best_len = len(best_word)
+    for i in range(1, len(candidates)):
+        w = candidates[i]
+        wl = len(w)
+        if wl < best_len:
+            best_word = w
+            best_len = wl
+
+    return (best_word, highest_score)
